@@ -12,10 +12,11 @@ Equilibres = function(e){
   if(e>=0.5){ return(rbind(e1,e3))}
   else {return(rbind(e1,e2,e3))}
 }
-#Modele de Bazikin]
+#Modele de Bazikin
 Bazikin = function(t,y,parms){
   dNdP = list(c(y[1]-y[1]*y[2]/(1+0.5*y[1])-parms[1]*y[1]*y[1], -y[2]*(1-y[1]/(1+0.5*y[1]))))
 }
+
 #Jacobienne pour epsilon = 0
 print("Jacobienne pour epsilon = 0")
 e = 1/4
