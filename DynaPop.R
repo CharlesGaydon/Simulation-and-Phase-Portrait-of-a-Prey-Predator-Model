@@ -25,39 +25,58 @@ EquationsF2 <- function(t, y, parameters){
   list(dy)
 }
 
+################### Portrait de phase ############################
+
+phase <- function (mu, CI){
+  title = paste("Portrait de phase - mu = ", mu," - CI= (", CI[1],",",CI[2],")")
+    
+  x.lim = c(0,2.5)
+  y.lim = c(0,4)
+  
+  flow <- flowField(EquationsF2,x.lim,y.lim,parameters=mu,points=15,add=FALSE, 
+                      xlab = "Proies", ylab = "Predateurs", main = title)
+  null <- nullclines(EquationsF2,x.lim,y.lim,parameters=mu,add=TRUE)
+  traj <- trajectory(EquationsF2,y0 = CI,parameters=mu,add=TRUE,t.end = 600)
+}
 ################### Chroniques ############################
 
-#Mise en évidence de la bifurcation : on constate la disparition progressive d'un cycle limite
-#Attractant autour de l'équilibre non trivia, qui lui perd son instabilité avec 
-#l'augmentation de mu.
+chronique <- function (mu, init1, init2){
+  temps=seq(0,200,by=0.1)
+  s1=lsoda(y=init1,times=temps,func=EquationsF1,parms=mu)
+  s2=lsoda(y=init2,times=temps,func=EquationsF1,parms=mu)
 
-phases <- function(){
-  other = TRUE
-  par(mfrow = c(2,2))
-  for (mu in c(0.3,0.3,0.4,0.5)){
-    title = paste("mu = ", mu)
-    
-    x.lim = c(0,2.5)
-    y.lim = c(0,4)
-  
-    flow <- flowField(EquationsF2,x.lim,y.lim,parameters=mu,points=15,add=FALSE, 
-                      xlab = "N", ylab = "P", main = title)
-    null <- nullclines(EquationsF2,x.lim,y.lim,parameters=mu,add=TRUE)
-    if (!other){
-    init = c(1,4)
-      traj <- trajectory(EquationsF2,y0 = init,parameters=mu,add=TRUE,t.end = 600)
-      init = c(2.5,0.5)
-      traj <- trajectory(EquationsF2,y0 = init,parameters=mu,add=TRUE,t.end = 600)
-    }
-    if (other){
-      init = c(0.7,2)
-      traj <- trajectory(EquationsF2,y0 = init,parameters=mu,add=TRUE,t.end = 600)
-      other = FALSE
-    }
-  }
+  plot(temps, s1[,2],col="dodgerblue",xlim=c(0,200), ylim=c(0,max(init1[2], init1[2])+3),type='l', ylab="Densité de population", xlab='Temps', 
+       main=paste("Chroniques - mu = ",round(mu,2)," - C1 = (", init1[1],",",init1[2],
+                  ") et C2 = (", init2[1],",",init2[2],")"))
+  lines(temps, s1[,3], col="indianred", type='l', lty = 1)
+  lines(temps, s2[,2], col="dodgerblue", type='l', lty = 2)
+  lines(temps, s2[,3], col="indianred", type='l', lty = 2)
+  legend('topright',legend=c("Proies sous C1",
+                             "Predateurs sous C1", 
+                             "Proies sous C2", 
+                             "Predateurs sous C2"),
+                             lwd=1,col=c("indianred","dodgerblue","indianred",
+                                         "dodgerblue"),lty=c(1,1,2,2), cex = 0.7 )
+}
+#chronique(0.3,c(0.5,2.2),c(4,5)) cool!!
+
+################### Graphiques ############################
+
+Graphiques <- function(){
+  layout(matrix(c(1,2),nrow=1), widths=c(2,1))
+  chronique(0.3,c(0.5,2.2),c(4,5))
+  phase(0.3, c(4,5))
+  chronique(0.4,c(0.5,2.2),c(4,5))
+  phase(0.4, c(4,5))
+  chronique(0.5,c(0.5,2.2),c(4,5))
+  phase(0.5, c(4,5))
 }
 
-phases()
+Graphiques()
+
+#Mise en évidence de la bifurcation : on constate la disparition progressive d'un cycle limite
+#Attractant autour de l'équilibre non trivial, qui lui perd son instabilité avec 
+#l'augmentation de mu.
 
 ################### Equilibres et stabilite ############################
 
@@ -79,9 +98,11 @@ stability = function(mu){
 }
 
 ###################### Portrait de phases ########################
+
 #On incrémente mu et on trace les équilibres et leur stabilité. 
 #Traçons deux portraits de phase : celui des densités de population, puis celui plus concis 
 # de la stabilité du point d'équilibre non trivial.
+
 bifurcation <- function(){
   par(mfrow=c(1,1))
   
